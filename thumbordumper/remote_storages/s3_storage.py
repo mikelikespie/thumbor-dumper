@@ -1,4 +1,4 @@
-import http_storage
+import thumbordumper.remote_storages.http_storage
 import email
 import hashlib
 import mimetypes
@@ -57,10 +57,10 @@ def _canonical_string(request):
 
     return '\n'.join(sign_items)
         
-class Storage(http_storage.Storage):
+class Storage(thumbordumper.remote_storages.http_storage.Storage):
 
     def __init__(self, context):
-        http_storage.Storage.__init__(self, context)
+        thumbordumper.remote_storages.http_storage.Storage.__init__(self, context)
 
         if not context.config.S3_SECRET_ACCESS_KEY:
             raise RuntimeError("S3_SECRET_ACCESS_KEY can't be empty if s3_storage specified")
