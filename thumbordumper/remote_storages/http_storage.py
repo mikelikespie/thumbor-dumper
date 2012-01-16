@@ -8,6 +8,9 @@ import thumbor.loaders.http_loader
 
 import posixpath
 
+import logging
+logger = logging.getLogger(__name__)
+
 def _canonical_url(url):
     """URL normalization code from http://stackoverflow.com/a/4317446/64941"""
     parsed = urlparse.urlparse(url)
@@ -24,13 +27,18 @@ def _canonical_url(url):
 
 def _wrap_cb(fn):
     def wrapper(response):
-        print 'wrapper cb'
+        if response.error:
+            logger.error("Request for failed. error: %s", response.error)
+        else:
+            logger.info("Request succeeded for %s", response.request.url)
         fn(response.body, response.error)
 
     return wrapper
 
 #callbacks take a body and an error argument
 class Storage(thumbor.storages.BaseStorage):
+    http_client = None
+
     def put(self, path, bytes, callback):
         url = _canonical_url(path)
         request = tornado.httpclient.HTTPRequest(url,
@@ -50,11 +58,10 @@ class Storage(thumbor.storages.BaseStorage):
 
     @property
     def client(self):
-        if thumbor.loaders.http_loader.http_client is None:
-            return tornado.httpclient.AsyncHTTPClient()
-        else:
-            return thumbor.loaders.http_loader.http_client
-
+        if self.__class__.http_client is None:
+            self.__class__.http_client = tornado.httpclient.AsyncHTTPClient()
+        
+        return self.__class__.http_client
 
     def sign_request(self, request):
         pass

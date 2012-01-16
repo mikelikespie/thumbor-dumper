@@ -9,6 +9,7 @@ import urlparse
 required_headers = ('content-md5',
                     'content-type',
                     'date') # sorted
+
 amz_prefix = 'x-amz-'
 
 allowed_query_params = set(('acl',
@@ -54,8 +55,6 @@ def _canonical_string(request):
 
     sign_items.append(canonical_url)
 
-    print sign_items
-
     return '\n'.join(sign_items)
         
 class Storage(http_storage.Storage):
@@ -71,6 +70,8 @@ class Storage(http_storage.Storage):
             raise RuntimeError("S3_ACCESS_KEY_ID can't be empty if s3_storage specified")
         self.s3_access_key_id = context.config.S3_ACCESS_KEY_ID
 
+        self.s3_put_x_amz_acl = context.config.S3_PUT_X_AMZ_ACL if hasattr(context.config, 'S3_PUT_X_AMZ_ACL') else None
+
     def sign_request(self, request):
         if 'Date' not in request.headers:
             request.headers['Date'] = email.utils.formatdate(None, False, True)
@@ -83,11 +84,12 @@ class Storage(http_storage.Storage):
             if type is not None:
                 request.headers['Content-Type'] = type
 
+        if self.s3_put_x_amz_acl:
+            request.headers['x-amz-acl'] = self.s3_put_x_amz_acl
+
         canonical_string = _canonical_string(request)
-        print canonical_string
+
         digest = hmac.new(self.s3_secret_access_key, canonical_string, hashlib.sha1).digest()
         signature = base64.encodestring(digest).strip()
 
         request.headers['Authorization'] = 'AWS %s:%s' % (self.s3_access_key_id, signature)
-
-        print "Foo"

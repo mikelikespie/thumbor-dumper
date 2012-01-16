@@ -19,8 +19,11 @@ setup(name='thumbor-dumper',
       zip_safe=True,
       install_requires=[
           # -*- Extra requirements: -*-
+
       ],
       entry_points="""
       # -*- Entry points: -*-
+      [console_scripts]
+      thumbor-dumper = thumbordumper.server:main
       """,
       )
