@@ -18,8 +18,8 @@ setup(name='thumbor-dumper',
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          # -*- Extra requirements: -*-
-
+          "tornado>=2.1.1",
+          "thumbor>=2.3.0"
       ],
       entry_points="""
       # -*- Entry points: -*-
